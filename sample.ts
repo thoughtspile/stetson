@@ -3,12 +3,12 @@ import { stetson } from ".";
 const counter = stetson(0).actions((store) => ({
   up: () => store.value++,
   down: () => store.value--,
-  reset: () => store.value = 0
+  reset: () => (store.value = 0),
 }));
 
-const _store = writable({ 
-  data: null, 
-  loading: false, 
+const _store = writable({
+  data: null,
+  loading: false,
   error: false,
 });
 const store = {
@@ -24,10 +24,10 @@ const store = {
   },
 };
 
-const sstore = stetson({ 
-  data: null, 
-  loading: false, 
-  error: false, 
+const sstore = stetson({
+  data: null,
+  loading: false,
+  error: false,
 }).actions(({ value }) => ({
   async load() {
     value.loading = true;
@@ -39,5 +39,5 @@ const sstore = stetson({
     } finally {
       value.loading = false;
     }
-  }
-}))
+  },
+}));

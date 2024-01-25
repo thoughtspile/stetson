@@ -1,12 +1,12 @@
 # Stetson — the no-fuss svelte store
 
-Stetson is a thin wrapper over svelte stores that makes your life easier. __Stability: experimental, feedback welcome.__
+Stetson is a thin wrapper over svelte stores that makes your life easier. **Stability: experimental, feedback welcome.**
 
-- __Embrace mutable state.__ Svelte is good at mutable state. No need for immutable mumbo-jumbo.
-- __Safe data access.__ All the actions on your data are described in one place. No surprises.
-- __Non-opinionated.__ Use built-in or custom classes for state. Use sync, promise, async / await or callback actions. Actions can return what you want. I don't care.
-- __Simple and tiny.__ No new concepts to learn. Under 300 bytes in your bundle.
-- __Auto-batching.__ Multiple synchronous updates trigger subscribers once. Good for performance.
+- **Embrace mutable state.** Svelte is good at mutable state. No need for immutable mumbo-jumbo.
+- **Safe data access.** All the actions on your data are described in one place. No surprises.
+- **Non-opinionated.** Use built-in or custom classes for state. Use sync, promise, async / await or callback actions. Actions can return what you want. I don't care.
+- **Simple and tiny.** No new concepts to learn. Under 300 bytes in your bundle.
+- **Auto-batching.** Multiple synchronous updates trigger subscribers once. Good for performance.
 
 [Try it out now]() or install:
 
@@ -19,10 +19,10 @@ npm install stetson
 The obligatory counter. Yes, stetson can store primitives:
 
 ```ts
-const counter = stetson(0).actions(s => ({
+const counter = stetson(0).actions((s) => ({
   up: () => s.value++,
-  reset: () => s.value = 0,
-}))
+  reset: () => (s.value = 0),
+}));
 ```
 
 Object state? No problem, just mutate it. Todo app:
@@ -31,18 +31,18 @@ Object state? No problem, just mutate it. Todo app:
 type Todo = { text: string; done: boolean };
 const todos = stetson<Todo[]>([]).actions((store) => ({
   add(text: Good) {
-    store.value.push({ text, done: false })
+    store.value.push({ text, done: false });
   },
   remove(id: string) {
-    store.value = store.value.filter(g => g.id !== id)
-  }, 
+    store.value = store.value.filter((g) => g.id !== id);
+  },
   toggle(id: string) {
-    const item = store.value.find(g.id === id)
+    const item = store.value.find(g.id === id);
     if (item) {
-      item.done = !item.done
+      item.done = !item.done;
     }
-  }
-}))
+  },
+}));
 ```
 
 Async actions? You got it:
@@ -65,22 +65,22 @@ const data = stetson({
     }
   }
 }))
-``` 
+```
 
 ## Pain points solved
 
-__Custom stores are harder than needed.__ Yes, you can have a custom store in raw svelte, but you must move it to a separate JS / TS file _or_ wrap in a function to remove the underlying writable from scope, and it's not very ergonomic with all the set / update calls. [Official example:](https://svelte.dev/examples/custom-stores)
+**Custom stores are harder than needed.** Yes, you can have a custom store in raw svelte, but you must move it to a separate JS / TS file _or_ wrap in a function to remove the underlying writable from scope, and it's not very ergonomic with all the set / update calls. [Official example:](https://svelte.dev/examples/custom-stores)
 
 ```js
 function createCount() {
-	const { subscribe, set, update } = writable(0);
+  const { subscribe, set, update } = writable(0);
 
-	return {
-		subscribe,
-		increment: () => update((n) => n + 1),
-		decrement: () => update((n) => n - 1),
-		reset: () => set(0)
-	};
+  return {
+    subscribe,
+    increment: () => update((n) => n + 1),
+    decrement: () => update((n) => n - 1),
+    reset: () => set(0),
+  };
 }
 const counter = createCount();
 ```
@@ -95,39 +95,39 @@ const counter = stetson(0).actions((store) => {
 });
 ```
 
-__Method calls don't trigger update.__ Svelte only sees a store change if you call `set()` or `update()`, or assign `$store = value` in a `.svelte` file. We work around it with awkward stuff like...
+**Method calls don't trigger update.** Svelte only sees a store change if you call `set()` or `update()`, or assign `$store = value` in a `.svelte` file. We work around it with awkward stuff like...
 
 ```js
-$store.push('item')
-$store = $store
+$store.push("item");
+$store = $store;
 // or, in JS:
-store.set($store)
-store.update(v => v)
+store.set($store);
+store.update((v) => v);
 ```
 
 No problem for stetson, every state access (push, add, property mutation) schedules an update.
 
 ```js
 const store = stetson([]).actions(({ value }) => {
-  push: (el) => value.push(el)
-})
-store.push('item')
+  push: (el) => value.push(el);
+});
+store.push("item");
 ```
 
-__Reading current value is hard.__ If you need the current store state in an action, you read it via `get(store)` (extra import + some runtime cost), or from `s.update(v => ...)` argument. Since it's some work, you can easily save a stale value:
+**Reading current value is hard.** If you need the current store state in an action, you read it via `get(store)` (extra import + some runtime cost), or from `s.update(v => ...)` argument. Since it's some work, you can easily save a stale value:
 
 ```ts
-const search = writable({ q: '', items: [] });
+const search = writable({ q: "", items: [] });
 async function onChange(query: string) {
   // we destructure to avoid calling get repeatedly
   const { q } = get(search);
-  search.update(s => ({ ...s, q: query }));
+  search.update((s) => ({ ...s, q: query }));
   const items = await searchApi(query);
   // suppose another onChange is called after we start awaiting
   // we try to avoid the race by comparing query:
   if (q === query) {
     // and we fail, because query was saved before it was changed
-    search.update(s => ({ ...s, items }));
+    search.update((s) => ({ ...s, items }));
   }
 }
 ```
@@ -135,27 +135,27 @@ async function onChange(query: string) {
 In stetson, it's super easy to access to the current value:
 
 ```ts
-const search = stetson({ q: '', items: [] }).actions(({ value }) => ({
+const search = stetson({ q: "", items: [] }).actions(({ value }) => ({
   async load(q: string) {
     value.q = q;
     const items = await searchApi(q);
     if (value.q === q) {
       value.items = items;
     }
-  }
-}))
+  },
+}));
 ```
 
-__Easy to trigger multiple updates.__ Every `set() / update()` synchronously calls all subscribers — not a _huge_ issue, but to avoid this you must tediously group updates:
+**Easy to trigger multiple updates.** Every `set() / update()` synchronously calls all subscribers — not a _huge_ issue, but to avoid this you must tediously group updates:
 
 ```js
-store.update(s => ({ ...s, loading: true }))
+store.update((s) => ({ ...s, loading: true }));
 try {
   // ...
-  store.set({ loading: false, error: false, ...res })
+  store.set({ loading: false, error: false, ...res });
 } catch {
   // ...
-  store.set({ loading: false, error: true })
+  store.set({ loading: false, error: true });
 }
 ```
 
@@ -165,45 +165,45 @@ Stetson auto-batching removes this burden - any synchronous updates are grouped 
 
 Stetson is minimal yet very flexible. Here are some more advanced scenarios.
 
-__Async actions__ work with async functions, raw promises, or callbacks. State updates are always synchronously flushed after the initial action call and when the promise eturned from the action resolves or rejects. Updates in the middle of promise chain, or in an async callback, schedule a flush microtask.
+**Async actions** work with async functions, raw promises, or callbacks. State updates are always synchronously flushed after the initial action call and when the promise eturned from the action resolves or rejects. Updates in the middle of promise chain, or in an async callback, schedule a flush microtask.
 
 ```js
-const time = stetson(0).actions(s => ({
+const time = stetson(0).actions((s) => ({
   start: () => {
-    s.value = Date.now()
+    s.value = Date.now();
     setInterval(() => {
-      s.value += 1000
+      s.value += 1000;
       // flush
-    }, 1000)
+    }, 1000);
     // flush Date.now()
   },
   wait: async () => {
     s.value = 0;
     // sync flush
     await loadValue();
-    s.value = 1
+    s.value = 1;
     // flush by async set
-    await loadValue()
-    s.value = 2
+    await loadValue();
+    s.value = 2;
     // flush by resolve
-  }
-}))
+  },
+}));
 ```
 
-__Reassigning state__ instead of setting its properties is done by assigning to `value` property of the parameter:
+**Reassigning state** instead of setting its properties is done by assigning to `value` property of the parameter:
 
 ```js
 // for primitive values:
-const num = stetson(0).actions(s => {
-  next: () => s.value = s.value + 1
+const num = stetson(0).actions((s) => {
+  next: () => (s.value = s.value + 1);
 });
 // or for objects:
-const num = stetson({}).actions(s => {
-  set: (data) => s.value = data
+const num = stetson({}).actions((s) => {
+  set: (data) => (s.value = data);
 });
 ```
 
-__Return values__ of actions can be whatever you want, it's not used for state updates or anything (unlike reducers).
+**Return values** of actions can be whatever you want, it's not used for state updates or anything (unlike reducers).
 
 ```js
 const todos = stetson([]).actions(s => {
@@ -226,7 +226,7 @@ const todos = stetson([]).actions(s => {
 });
 ```
 
-__Compound and private actions__ are built by declaring functions in the builder closure. Updates are only flushed after the outer (exposed to the user) action finishes.
+**Compound and private actions** are built by declaring functions in the builder closure. Updates are only flushed after the outer (exposed to the user) action finishes.
 
 ```js
 const list = stetson([]).actions((store) => {
@@ -235,7 +235,7 @@ const list = stetson([]).actions((store) => {
   }
   // private action
   function remove(el) {
-    store.value = store.value.filter(x => x === el);
+    store.value = store.value.filter((x) => x === el);
   }
   // compound action using add and remove base actions
   function toggle(el) {
@@ -243,13 +243,13 @@ const list = stetson([]).actions((store) => {
   }
   // expose add & toggle
   return { add, toggle };
-})
+});
 ```
 
-__Non-reactive state__ can also be stored as closure variable. The builder is guaranteed to be called only once:
+**Non-reactive state** can also be stored as closure variable. The builder is guaranteed to be called only once:
 
 ```js
-const ticker = stetson(0).actions(store => {
+const ticker = stetson(0).actions((store) => {
   // this value is shared between all actions, but is not reactive or visible from outside.
   let interval;
   return {
@@ -258,8 +258,8 @@ const ticker = stetson(0).actions(store => {
     },
     stop() {
       clearInterval(interval);
-    }
-  }
+    },
+  };
 });
 ```
 
@@ -283,12 +283,12 @@ stetson(false).actions((store) => ({
 stetson({ messages: [] }).actions(({ value }) => ({
   add: () => {
     // Changes are triggered
-    // 1. by reading "value" 
+    // 1. by reading "value"
     // 2. by accessing any property of (object) value
     // 3. after action call
     // 4. after promise action settles
     const { messages } = value
-    // If you detach a property of value 
+    // If you detach a property of value
     // and change it asynchronously, bad luck:
     setTimeout(() => messages.push({}), 1000)
 
@@ -313,7 +313,7 @@ stetson([1]).actions(({ value }) => ({
 // 4. Uncaught exceptions lead to partial updates.
 // say we want success = !!data
 stetson({ success: false: data: null }).actions(({ value }) => ({
-  // Stetson actually 
+  // Stetson actually
   setData(data) {
     value.success = true
     // next line throws:
@@ -322,7 +322,7 @@ stetson({ success: false: data: null }).actions(({ value }) => ({
     }
     // now we have { success: true, data: null }
   }
-  // To avoid: 
+  // To avoid:
   // a. Use derived state
   // b. Move all updates _after_ unsafe operations
   // c. Add try / catch with manual rollback

@@ -1,18 +1,30 @@
 {
   "name": "stetson",
   "version": "0.0.1",
-  "description": "",
+  "description": "A simple svelte store wrapper",
+  "author": "Vladimir Klepov v.klepov@gmail.com",
+  "keywords": [],
+  "license": "MIT",
   "type": "module",
   "module": "index.js",
   "scripts": {
     "test": "node index.test.js",
-    "size": "npx esbuild --bundle --minify --external:svelte --format=esm index.js | gzip -c | wc -c"
+    "size": "esbuild --bundle --minify --external:svelte --format=esm index.js | gzip -c | wc -c",
+    "format:all": "prettier --write .",
+    "format": "./node_modules/.bin/nano-staged"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "pre-commit": [
+    "format",
+    "test"
+  ],
+  "nano-staged": {
+    "*": "prettier --write"
+  },
   "devDependencies": {
     "esbuild": "^0.19.12",
+    "nano-staged": "^0.8.0",
+    "pre-commit": "^1.2.2",
+    "prettier": "^3.2.4",
     "svelte": "^4.2.9"
   }
 }
