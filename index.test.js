@@ -68,6 +68,13 @@ test("sync actions", async () => {
     store.next();
     assert.deepEqual(get(store), { count: 1 });
   });
+  await test("method call triggers update", () => {
+    const store = stetson([]).actions(({ value }) => ({
+      add: (el) => value.push(el),
+    }));
+    store.add(100);
+    assert.deepEqual(get(store), [100]);
+  });
   await test("object assignment preserves proxy", () => {
     const store = stetson({ count: 0 }).actions((store) => ({
       replace: () => (store.value = { count: store.value.count + 1 }),
