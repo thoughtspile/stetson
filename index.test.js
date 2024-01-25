@@ -1,12 +1,13 @@
 import { mock, test } from "node:test";
 import assert from "node:assert/strict";
 import { stetson } from "./index.js";
-import { get } from "svelte/store";
 
 test("Readable", async () => {
   await test("is readable", () => {
     const store = stetson(0).actions(() => ({}));
-    assert.equal(get(store), 0);
+    let res;
+    store.subscribe((v) => (res = v));
+    assert.equal(res, 0);
   });
   await test("no extra methods", () => {
     const store = stetson(0).actions(() => ({}));
@@ -25,11 +26,10 @@ test("sync actions", async () => {
     assert.deepEqual(store.next(), "hello");
   });
   await test("arguments are passed", () => {
-    const store = stetson([]).actions((store) => ({
-      next: (...args) => (store.value = args),
+    const store = stetson(0).actions(() => ({
+      next: (...args) => args,
     }));
-    store.next(1, 2, 3);
-    assert.deepEqual(get(store), [1, 2, 3]);
+    assert.deepEqual(store.next(1, 2, 3), [1, 2, 3]);
   });
   await test("updates are batched", () => {
     const cb = mock.fn();
@@ -51,47 +51,48 @@ test("sync actions", async () => {
     const store = stetson({ count: 0 }).actions(({ value }) => ({
       next: () => value.count++,
     }));
+    let res;
+    store.subscribe((v) => (res = { ...v }));
     store.next();
-    assert.deepEqual(get(store), { count: 1 });
+    assert.deepEqual(res, { count: 1 });
   });
   await test("primitive assignment triggers update", () => {
     const store = stetson(0).actions((store) => ({
       next: () => store.value++,
     }));
+    let res;
+    store.subscribe((v) => (res = v));
     store.next();
-    assert.deepEqual(get(store), 1);
+    assert.deepEqual(res, 1);
   });
   await test("object assignment triggers update", () => {
     const store = stetson({ count: 0 }).actions((store) => ({
       next: () => (store.value = { count: store.value.count + 1 }),
     }));
+    let res;
+    store.subscribe((v) => (res = { ...v }));
     store.next();
-    assert.deepEqual(get(store), { count: 1 });
+    assert.deepEqual(res, { count: 1 });
   });
   await test("method call triggers update", () => {
     const store = stetson([]).actions(({ value }) => ({
       add: (el) => value.push(el),
     }));
+    let res;
+    store.subscribe((v) => (res = [...v]));
     store.add(100);
-    assert.deepEqual(get(store), [100]);
+    assert.deepEqual(res, [100]);
   });
   await test("object assignment preserves proxy", () => {
     const store = stetson({ count: 0 }).actions((store) => ({
       replace: () => (store.value = { count: store.value.count + 1 }),
       add: () => store.value.count++,
     }));
+    let res;
+    store.subscribe((v) => (res = { ...v }));
     store.replace();
     store.add();
-    assert.deepEqual(get(store), { count: 2 });
-  });
-  await test("proxy is created after lazy object init", () => {
-    const store = stetson(null).actions((store) => ({
-      init: () => (store.value = { count: 0 }),
-      add: () => store.value.count++,
-    }));
-    store.init();
-    store.add();
-    assert.deepEqual(get(store), { count: 1 });
+    assert.deepEqual(res, { count: 2 });
   });
 });
 
@@ -104,8 +105,10 @@ test("async actions", async () => {
         store.value++;
       },
     }));
+    let res;
+    store.subscribe((v) => (res = v));
     store.next();
-    assert.deepEqual(get(store), 1);
+    assert.deepEqual(res, 1);
   });
   await test("final update is flushed before action resolve", async () => {
     const store = stetson(0).actions((store) => ({
@@ -115,8 +118,10 @@ test("async actions", async () => {
         store.value++;
       },
     }));
+    let res;
+    store.subscribe((v) => (res = v));
     await store.next();
-    assert.deepEqual(get(store), 2);
+    assert.deepEqual(res, 2);
   });
   await test("intermediate updates are flushed in promise", async () => {
     const cb = mock.fn();

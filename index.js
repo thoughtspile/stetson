@@ -8,32 +8,28 @@ export const stetson = (value) => ({
     const flush = () => dirty && (dirty = s.set(value));
     const invalidate = async () => !dirty && ((dirty = s), await s, flush());
 
-    let valueProxy;
-    const makeStateProxy = () => {
-      valueProxy =
-        value instanceof Object
-          ? new Proxy(value, {
-              get: (_, p) => {
-                invalidate();
-                return target[p];
-              },
-              set: (_, p, v) => {
-                invalidate();
-                return (target[p] = v);
-              },
-            })
-          : value;
-    };
-    makeStateProxy();
+    let valueProxy =
+      value instanceof Object
+        ? new Proxy(value, {
+            get: (_, p) => {
+              invalidate();
+              return value[p];
+            },
+            set: (_, p, v) => {
+              invalidate();
+              return (value[p] = v);
+            },
+          })
+        : value;
 
     const boundActions = builder({
       get value() {
-        return value;
+        return valueProxy;
       },
       set value(nextValue) {
         invalidate();
         value = nextValue;
-        makeStateProxy();
+        !(value instanceof Object) && (valueProxy = value);
       },
     });
 
@@ -42,7 +38,7 @@ export const stetson = (value) => ({
       res[k] = (...args) => {
         const res = boundActions[k](...args);
         flush();
-        return res;
+        return res && res.finally ? res.finally(flush) : res;
       };
     }
 
