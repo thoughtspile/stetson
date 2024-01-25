@@ -2,11 +2,17 @@
   "name": "stetson",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "module": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node index.test.js",
+    "size": "npx esbuild --bundle --minify --external:svelte --format=esm index.js | gzip -c | wc -c"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.19.12",
+    "svelte": "^4.2.9"
+  }
 }
