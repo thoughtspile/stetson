@@ -8,7 +8,7 @@ Stetson is a thin wrapper over svelte stores that makes your life easier. **Stab
 - **Simple and tiny.** No new concepts to learn. Under 300 bytes in your bundle.
 - **Auto-batching.** Multiple synchronous updates trigger subscribers once. Good for performance.
 
-[Try it out now]() or install:
+[Try it out now](https://svelte.dev/repl/b012c6f51ca64159b3a30bba1b0a1af6?version=4.2.9) or install:
 
 ```sh
 npm install stetson
@@ -28,16 +28,16 @@ const counter = stetson(0).actions((s) => ({
 Object state? No problem, just mutate it. Todo app:
 
 ```ts
-type Todo = { text: string; done: boolean };
+type Todo = { text: string; done: boolean; id: string };
 const todos = stetson<Todo[]>([]).actions((store) => ({
   add(text: Good) {
-    store.value.push({ text, done: false });
+    store.value.push({ text, done: false, id: `${Math.random()}` });
   },
   remove(id: string) {
     store.value = store.value.filter((g) => g.id !== id);
   },
   toggle(id: string) {
-    const item = store.value.find(g.id === id);
+    const item = store.value.find((g) => g.id === id);
     if (item) {
       item.done = !item.done;
     }
