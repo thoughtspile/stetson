@@ -1,11 +1,15 @@
 # Stetson — the no-fuss svelte store
 
+![GitHub License](https://img.shields.io/github/license/thoughtspile/stetson)
+![NPM Version](https://img.shields.io/npm/v/stetson)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/stetson)
+
 Stetson is a thin wrapper over svelte stores that makes your life easier. **Stability: experimental, feedback welcome.**
 
 - **Embrace mutable state.** Svelte is good at mutable state. No need for immutable mumbo-jumbo.
 - **Safe data access.** All the actions on your data are described in one place. No surprises.
 - **Non-opinionated.** Use built-in or custom classes for state. Use sync, promise, async / await or callback actions. Actions can return what you want. I don't care.
-- **Simple and tiny.** No new concepts to learn. Under 300 bytes in your bundle.
+- **Simple and tiny.** No new concepts to learn. Under 400 bytes in your bundle.
 - **Auto-batching.** Multiple synchronous updates trigger subscribers once. Good for performance.
 
 [Try it out now](https://svelte.dev/repl/b012c6f51ca64159b3a30bba1b0a1af6?version=4.2.9) or install:
