@@ -8,6 +8,7 @@ Stetson is a thin wrapper over svelte stores that makes your life easier. **Stab
 
 - **Embrace mutable state.** Svelte is good at mutable state. No need for immutable mumbo-jumbo.
 - **Safe data access.** All the actions on your data are described in one place. No surprises.
+- **Drop-in svelte store replacement.** Implements readable store interface. Opt-in writable compatibility.
 - **Non-opinionated.** Use built-in or custom classes for state. Use sync, promise, async / await or callback actions. Actions can return what you want. I don't care.
 - **Simple and tiny.** No new concepts to learn. Under 400 bytes in your bundle.
 - **Auto-batching.** Multiple synchronous updates trigger subscribers once. Good for performance.
@@ -204,6 +205,16 @@ const num = stetson(0).actions((s) => {
 // or for objects:
 const num = stetson({}).actions((s) => {
   set: (data) => (s.value = data);
+});
+```
+
+**Writable** stetson stores are easy to build — just implement set and update actions:
+
+```js
+const val = stetson(0).actions(s => {
+  up: () => s.value++,
+  set: v => s.value = v,
+  update: cb => s.value = cb(s.value),
 });
 ```
 
