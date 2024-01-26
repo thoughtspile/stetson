@@ -20,6 +20,9 @@
   "nano-staged": {
     "*": "prettier --write"
   },
+  "peerDependencies": {
+    "svelte": ">=3.0.0"
+  },
   "devDependencies": {
     "esbuild": "^0.19.12",
     "nano-staged": "^0.8.0",
